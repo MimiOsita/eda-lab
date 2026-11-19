@@ -104,6 +104,3 @@ function getTextContent({ name, email, message }: ContactDetails) {
       `;
 }
 
-//updated env file
-
-//cleared out cdk cache
