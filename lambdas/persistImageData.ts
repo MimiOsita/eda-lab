@@ -23,18 +23,27 @@ export const handler: SQSHandler = async (event) => {
 
                 const srcKey = decodeURIComponent(s3e.object.key.replace(/\+/g, " "));
 
-                try {
-                    await ddbDobClient.send(
-                        new PutCommand({
-                            TableName: process.env.TABLE_NAME,
-                            Item: {
-                                name: srcKey
-                            },
-                        })
-                    );
-                } catch (error) {
-                    console.log(error);
+                const typeMatch = srcKey.match(/\.([^.]*)$/);
+                if (!typeMatch) {
+                    console.log("Could not determine the image type.");
+                    throw new Error("Could not determine the image type.");
                 }
+
+                const imageType = typeMatch[1].toLowerCase();
+                if (imageType !== "jpeg" && imageType !== "jpg" && imageType !== "png") {
+                    throw new Error(`Unsupported image type: ${imageType}`);
+                }
+
+                await ddbDobClient.send(
+                    new PutCommand({
+                        TableName: process.env.TABLE_NAME,
+                        Item: {
+                            name: srcKey,
+                        },
+                    })
+                );
+
+                
             }
         }
     }
